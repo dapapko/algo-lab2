@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <map>
 #include "Binnum.h"
 #include "Stack.h"
 using namespace std;
@@ -8,10 +9,68 @@ using T = int;
 
 
 bool isOperator(string &exp) {
-    return (exp == "+" || exp == "-" || exp == "x" || exp == "/");
+    return (exp == "+" || exp == "-" || exp == "x" || exp == "/" || exp == "(");
+}
+bool isOperand(string s) {
+    try {
+        stoi(s);
+        return true;
+    } catch (std::exception &e) {
+        return false;
+    }
+}
+vector<string> infixToRPN(vector<string> expr) {
+    map <string, int> ops;
+    vector<string> res;
+    ops["x"] = 3; ops["/"] = 3;
+    ops["+"] = 2; ops["-"] = 2;
+    ops["("] = 1;
+    Stack<string> result;
+    Stack<string> operations;
+    for(string value: expr) {
+        if (!isOperand(value))
+        {
+
+            if (value == ")") {
+                while (operations.get_top() != "(")
+                {
+                    res.push_back(operations.get_top());
+                    operations.pop();
+
+                }
+                operations.pop();
+            }
+            else if (value == ")")
+            {
+                operations.push(value);
+            }
+            else if (operations.isEmpty() || (ops[operations.get_top()] < ops[value]))
+            {
+                operations.push(value);
+            }
+            else
+            {
+                do
+                {
+                    res.push_back(operations.pop());
+                } while (!(operations.isEmpty() || (ops[operations.get_top()] < ops[value])));
+                operations.push(value);
+            }
+        }
+        else
+        {
+            res.push_back(value);
+        }
+    }
+    while (!operations.isEmpty())
+    {
+        res.push_back(operations.pop());
+    }
+
+    return res;
 }
 
-Binnum<T> rpnExprCalc(vector<string> &expr) {
+Binnum<T> rpnExprCalc(vector<string> expr) {
     auto *stack = new Stack<Binnum<T>>();
     for (string e: expr) {
         if (!isOperator(e)) {
@@ -42,21 +101,26 @@ Binnum<T> rpnExprCalc(vector<string> &expr) {
     return result;
 }
 
-int main() {
-    vector<string> v;
+int main(int argc, char *argv[]) {
+    char notation = *argv[1];
     string s;
-    cout << "Enter RPN expression: ";
+    vector<string> v ;
+    cout << "Enter expression: ";
     while ((cin.peek() != '\n') && (cin.peek() != EOF)) {
         cin >> s;
         v.push_back(s);
     }
     try {
-        Binnum<T> result = rpnExprCalc(v);
+        Binnum<T> result;
+        if (notation == 'i') result = rpnExprCalc(infixToRPN(v));
+        else if (notation == 'p') result = rpnExprCalc(v);
         cout << "Result: " << result << endl;
         cout << "Result (bin): ";
         result.prt_bin();
         cout << endl;
-    } catch (std::exception &e) {
-        cout << "Smth is wrong with your expression" << endl;
+        } catch (std::exception &e) {
+             cout << "Smth is wrong with your expression" << endl;
     }
+
+
 }
