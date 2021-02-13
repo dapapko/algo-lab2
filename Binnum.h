@@ -5,6 +5,8 @@
 #ifndef ESE_LAB1_BINNUM_H
 #define ESE_LAB1_BINNUM_H
 #include <bitset>
+#include <limits>
+
 using namespace std;
 template <typename T>
 using BinaryStorage = bitset<8 * sizeof(T)>;
@@ -19,6 +21,9 @@ public:
 
     explicit Binnum(T num) {
         binary_num_ = bitset<sizeof(T)*8>(num);
+        if (num < numeric_limits<T>::min() || num > numeric_limits<T>::max()) {
+            throw runtime_error("number is out of range");
+        }
         dec = num;
     }
 
